@@ -1,1 +1,12 @@
 data/
+
+# Ignore Python environment files
+.rasterenv/
+env/
+venv/
+
+# Ignore system files
+
+.DS_Store
+*.pyc
+__pycache__/
