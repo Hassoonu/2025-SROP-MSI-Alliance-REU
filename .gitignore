@@ -13,3 +13,7 @@ venv/
 .DS_Store
 *.pyc
 __pycache__/
+
+# for verify script
+node_modules/
+out/
