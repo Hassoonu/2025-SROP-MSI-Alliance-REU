@@ -1,0 +1,15 @@
+{
+  "name": "verifyscript",
+  "version": "0.0.1",
+  "description": "Script to iterate through data and let user visualize data, then be able to accept or reject data quickly.",
+  "license": "MIT",
+  "author": "Hasan Al Saeedi",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0"
+  }
+}
