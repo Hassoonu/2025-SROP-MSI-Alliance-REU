@@ -41,7 +41,7 @@ def accessFolder(api, id, query=None):
     else:
         results = api.files().list(
             q=query,
-            fields="nextPageToken, files(id, name)",
+            fields="nextPageToken, files(id, name, mimeType)",
             pageSize=1000,
             supportsAllDrives=True,
             includeItemsFromAllDrives=True,
