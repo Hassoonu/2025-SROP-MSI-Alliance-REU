@@ -6,7 +6,8 @@ const exec = require('child_process')
 const createWindow = () => {
     const win = new BrowserWindow({
         width: 800,
-        height: 400
+        height: 600,
+        resizable: true
     })   
 
     win.loadFile("index.html")
@@ -30,28 +31,28 @@ app.on("window-all-closed", () => {
 })
 
 
-ipcMain.handle('next-dataset', () => {
-  return execPromise('python visualize.py --action=next');
-});
+// ipcMain.handle('next-dataset', () => {
+//   return execPromise('python visualize.py --action=next');
+// });
 
-ipcMain.handle('prev-dataset', () => {
-  return execPromise('python visualize.py --action=prev');
-});
+// ipcMain.handle('prev-dataset', () => {
+//   return execPromise('python visualize.py --action=prev');
+// });
 
-ipcMain.handle('delete-dataset', () => {
-  return execPromise('python visualize.py --action=delete');
-});
+// ipcMain.handle('delete-dataset', () => {
+//   return execPromise('python visualize.py --action=delete');
+// });
 
-ipcMain.handle('accept-dataset', () => {
-  return execPromise('python visualize.py --action=delete');
-});
+// ipcMain.handle('accept-dataset', () => {
+//   return execPromise('python visualize.py --action=delete');
+// });
 
 // Helper
-function execPromise(command) {
-  return new Promise((resolve, reject) => {
-    exec(command, (err, stdout, stderr) => {
-      if (err) reject(stderr);
-      else resolve(stdout);
-    });
-  });
-}
+// function execPromise(command) {
+//   return new Promise((resolve, reject) => {
+//     exec(command, (err, stdout, stderr) => {
+//       if (err) reject(stderr);
+//       else resolve(stdout);
+//     });
+//   });
+// }
