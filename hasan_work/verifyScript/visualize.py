@@ -78,10 +78,13 @@ def download_data(request):
 
 def visualizeData():
     # find way to access data from dataIndex
-    suffix = "_dem.tif"
+    suffix = "dem.tif"
     index = get_current_index()
     q = f"'{parent_drive}' in parents and mimeType = 'application/vnd.google-apps.folder'"
     files = accessFolder(drive_api, parent_drive, q)
+    print("All accessible folders:")
+    for f in files:
+        print(f['name'], f['id'])
     file = files[index]
     if(file['mimeType'] == 'application/vnd.google-apps.folder'):
         files = accessFolder(drive_api, file['id'])
@@ -93,6 +96,11 @@ def visualizeData():
             break
         else:
             continue
+            
+    
+
+    if fileID is None:
+        raise ValueError(f"No file found ending with {suffix}")
     
     request = drive_api.files().get_media(
         fileId=fileID,
@@ -211,19 +219,7 @@ def connectToDrive():
     
     about = drive_api.about().get(fields="user(emailAddress)").execute()
     print("Authenticated as:", about["user"]["emailAddress"])
-
-    results = drive_api.files().list(
-        q="mimeType = 'application/vnd.google-apps.folder'",
-        fields="files(id, name)",
-        supportsAllDrives=True,
-        includeItemsFromAllDrives=True,
-        pageSize=100
-        ).execute()
-
-    print("All accessible folders:")
-    for f in results["files"]:
-        print(f['name'], f['id'])
-    print(f"Loaded {dataset_len} folders")
+    # print(f"Loaded {dataset_len} folders")
 
     print("Server open...")
 
