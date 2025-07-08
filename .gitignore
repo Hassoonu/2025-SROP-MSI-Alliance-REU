@@ -17,3 +17,4 @@ __pycache__/
 # for verify script
 node_modules/
 out/
+credentials.json
