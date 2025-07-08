@@ -11,7 +11,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 import io
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file'] # the scope with which the google drive api can access data
+SCOPES = ['https://www.googleapis.com/auth/drive'] # the scope with which the google drive api can access data
 app = Flask(__name__)
 index_file = "index.txt"
 drive_api = None
@@ -36,7 +36,7 @@ def accessFolder(api, id, query=None):
             supportsAllDrives=True,
             includeItemsFromAllDrives=True,
             fields="files(id, name, mimeType)",
-            orderBy="name"
+            orderBy="name",
         ).execute()
     else:
         results = api.files().list(
@@ -45,7 +45,7 @@ def accessFolder(api, id, query=None):
             pageSize=1000,
             supportsAllDrives=True,
             includeItemsFromAllDrives=True,
-            orderBy="name"
+            orderBy="name",
         ).execute()
     files = results.get('files', [])
 
@@ -80,19 +80,20 @@ def visualizeData():
     # find way to access data from dataIndex
     suffix = "_dem.tif"
     index = get_current_index()
+    q = f"'{parent_drive}' in parents and mimeType = 'application/vnd.google-apps.folder'"
+    files = accessFolder(drive_api, parent_drive, q)
     file = files[index]
     if(file['mimeType'] == 'application/vnd.google-apps.folder'):
-        files = accessFolder(drive_api, parent_drive)
+        files = accessFolder(drive_api, file['id'])
 
-    correct_file = None
+    fileID = None
     for item in files:
-        if item.endswith(suffix):
-            correct_file = item
+        if item['name'].endswith(suffix):
+            fileID = item['id']
+            break
         else:
             continue
     
-    fileID = correct_file['id']
-
     request = drive_api.files().get_media(
         fileId=fileID,
         supportsAllDrives=True
@@ -121,7 +122,7 @@ def visualizeData():
 
 def next():
     index = get_current_index()
-    index += 1 % dataset_len
+    index = (index + 1) % dataset_len
     save_current_index(index)
     return 0
 
@@ -129,21 +130,26 @@ def prev():
     index = get_current_index()
     index -= 1
     if(index < 0):
-        index = dataset_len - 1
+        index = 0
     save_current_index(index)
     return 0
 
 @app.route('/image')
 def get_image():
+    print("Sending Image!")
+    visualizeData()
     return send_file('output/output.png')
 
 @app.route('/accept', methods=['POST'])
 def accept():
+    print("Recieved accept request!")
     next()
     return jsonify({'status': 'accepted'})
 
 @app.route('/delete', methods=['POST'])
 def delete_item():
+    global dataset_len
+    print("Recieved delete request!")
     index = get_current_index()
     # find file from index
     q = f"'{parent_drive}' in parents and mimeType = 'application/vnd.google-apps.folder'"
@@ -155,18 +161,27 @@ def delete_item():
 
 @app.route("/next", methods=['POST'])
 def next_item():
+    print("Recieved next request!")
     next()
-    visualizeData()
+    # visualizeData()
     return jsonify({'status': 'incremented'})
 
 @app.route("/prev", methods=['POST'])
 def prev_item():
+    print("Recieved previous request!")
     prev()
-    visualizeData()
+    # visualizeData()
     return jsonify({'status': 'decremented'})
 
+
 @app.route("/")
+def index():
+    return "Flask server running and connected to Google Drive"
+
+
 def connectToDrive():
+    global drive_api, dataset_len
+    print("Initializing Server...")
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -193,9 +208,29 @@ def connectToDrive():
     folders = []
     folders.extend(accessFolder(drive_api, parent_drive, q))
     dataset_len = len(folders)
+    
+    about = drive_api.about().get(fields="user(emailAddress)").execute()
+    print("Authenticated as:", about["user"]["emailAddress"])
+
+    results = drive_api.files().list(
+        q="mimeType = 'application/vnd.google-apps.folder'",
+        fields="files(id, name)",
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True,
+        pageSize=100
+        ).execute()
+
+    print("All accessible folders:")
+    for f in results["files"]:
+        print(f['name'], f['id'])
+    print(f"Loaded {dataset_len} folders")
+
+    print("Server open...")
 
 def main():
+    connectToDrive()
     app.run(port=5000)
+    
 
 if __name__ == '__main__':
     main()

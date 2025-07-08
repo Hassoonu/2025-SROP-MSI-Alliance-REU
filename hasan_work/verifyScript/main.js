@@ -1,6 +1,22 @@
 
 const {app, BrowserWindow, ipcMain } = require('electron/main')
-const exec = require('child_process')
+const { spawn } = require('child_process')
+
+const pythonProcess = spawn('python', ['visualize.py']);
+
+pythonProcess.stdout.on('data', (data) => {
+  console.log(`PYTHON: ${data}`);
+});
+
+pythonProcess.stderr.on('data', (data) => {
+  console.error(`PYTHON ERROR: ${data}`);
+});
+
+pythonProcess.on('close', (code) => {
+  console.log(`Python process exited with code ${code}`);
+});
+
+
 
 
 const createWindow = () => {

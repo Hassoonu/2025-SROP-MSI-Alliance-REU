@@ -1,28 +1,68 @@
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btn-next').addEventListener('click', sendNext);
-  document.getElementById('btn-prev').addEventListener('click', sendPrevious);
-  document.getElementById('btn-delete').addEventListener('click', sendDelete);
-  document.getElementById('btn-accept').addEventListener('click', sendAccept);
-  updateImage(); // load image on startup
+    console.log("DOM loaded");
+    document.getElementById('btn-next').addEventListener('click', () => sendNext());
+    document.getElementById('btn-prev').addEventListener('click', () =>sendPrevious());
+    document.getElementById('btn-delete').addEventListener('click', () =>sendDelete());
+    document.getElementById('btn-accept').addEventListener('click', () =>sendAccept());
+    updateImage(); // load image on startup
 });
 
 function sendNext(){
-    fetch('http://localhost:5000/next', {method: 'POST'}).then(() => updateImage())
+    console.log("Next Image...");
+    fetch('http://localhost:5000/next', {method: 'POST'})
+    .then(res => {
+            if (!res.ok) {
+                throw new Error('Server returned an error');
+            }
+            return res;
+        })
+    .then(() => updateImage())
+    .catch(err => console.error("Failed to send POST to /accept:", err));
 }
 
 function sendPrevious(){
-    fetch('http://localhost:5000/prev', {method: 'POST'}).then(() => updateImage())
+    console.log("Previous Image...");
+    fetch('http://localhost:5000/prev', {method: 'POST'}).then(res => {
+            if (!res.ok) {
+                throw new Error('Server returned an error');
+            }
+            return res;
+        })
+    .then(() => updateImage())
+    .catch(err => console.error("Failed to send POST to /accept:", err));
 }
 
 function sendDelete(){
-    fetch('http://localhost:5000/delete', {method: 'POST'}).then(() => updateImage())
+    console.log("Deleting Image...");
+    fetch('http://localhost:5000/delete', {method: 'POST'}).then(res => {
+            if (!res.ok) {
+                throw new Error('Server returned an error');
+            }
+            return res;
+        })
+    .then(() => updateImage())
+    .catch(err => console.error("Failed to send POST to /accept:", err));
 }
 
-function sendAccept(){
-    fetch('http://localhost:5000/accept', {method: 'POST'}).then(() => updateImage())
+function sendAccept() {
+    console.log("Accepting Image...");
+    fetch('http://localhost:5000/accept', { method: 'POST' })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Server returned an error');
+            }
+            return res;
+        })
+        .then(() => updateImage())
+        .catch(err => console.error("Failed to send POST to /accept:", err));
 }
+
 
 function updateImage(){
-    const img = document.getElementById('main-image');
+    console.log("Updating Image...");
+    const img = document.getElementById('data_image');
     img.src = `http://localhost:5000/image?t=${new Date().getTime()}`;
 }
