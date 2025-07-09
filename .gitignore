@@ -17,3 +17,6 @@ __pycache__/
 # for verify script
 node_modules/
 out/
+
+client_secrets.json
+datauploading.ipynb
