@@ -1,0 +1,14 @@
+name: pgc-stac-environment
+channels:
+  - conda-forge
+dependencies:
+  - pystac-client
+  - ipyleaflet
+  - stackstac
+  - xarray
+  - geopandas
+  - pandas
+  - jupyter
+  - ipython
+  - geojson
+  - pydrive2
