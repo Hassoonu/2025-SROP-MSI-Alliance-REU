@@ -2,6 +2,7 @@ data/
 .venv/
 datasets/
 updated-datasets/
+plots/
 
 # Ignore Python environment files
 .rasterenv/
