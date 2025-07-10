@@ -3,3 +3,18 @@ data/
 datasets/
 updated-datasets/
 plots/
+
+# Ignore Python environment files
+.rasterenv/
+env/
+venv/
+
+# Ignore system files
+
+.DS_Store
+*.pyc
+__pycache__/
+
+# for verify script
+node_modules/
+out/

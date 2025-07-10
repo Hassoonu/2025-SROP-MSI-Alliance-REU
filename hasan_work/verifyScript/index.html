@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self'"
+        />
+        <meta
+            http-equiv="X-Content-Security-Policy"
+            content="default-src 'self'; script-src 'self'"
+        />
+        <title>Alpha Stage</title>
+    </head>
+    <body>
+        <img />
+        <button onclick="navigate('prev')">Previous</button>
+        <button onclick="navigate('next')">Next</button>
+        <button onclick="navigate('delete')">Delete</button>
+        <button onclick="navigate('accept')">Delete</button>
+
+        <script>
+        async function navigate(action) {
+            await window.dataAPI.action(action);
+            document.getElementById('img').src = 'output.png?' + new Date().getTime();
+        }
+        </script>
+    </body>
+</html>
