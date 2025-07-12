@@ -2,6 +2,7 @@ data/
 .venv/
 datasets/
 updated-datasets/
+plots/
 
 # Ignore Python environment files
 .rasterenv/
@@ -13,3 +14,10 @@ venv/
 .DS_Store
 *.pyc
 __pycache__/
+
+# for verify script
+node_modules/
+out/
+temp/
+credentials.json
+token.json
