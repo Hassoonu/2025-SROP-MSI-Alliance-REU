@@ -1,6 +1,6 @@
-const { ipcRenderer, contextBridge } = require('electron')
+// const { ipcRenderer, contextBridge } = require('electron')
 
 
-contextBridge.exposeInMainWorld("dataAPI", {
-    action: (action) => ipcRenderer.invoke(`${action}-dataset`),
-});
+// contextBridge.exposeInMainWorld("dataAPI", {
+//     action: (action) => ipcRenderer.invoke(`${action}-dataset`),
+// });

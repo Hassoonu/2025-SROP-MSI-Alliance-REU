@@ -5,7 +5,11 @@
         <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
         <meta
             http-equiv="Content-Security-Policy"
+<<<<<<< HEAD
             content="default-src 'self'; script-src 'self'"
+=======
+            content="default-src 'self'; connect-src 'self' http://localhost:5000; script-src 'self'; img-src 'self' blob: data: http://localhost:5000;"
+>>>>>>> origin/verifyScript
         />
         <meta
             http-equiv="X-Content-Security-Policy"
@@ -14,6 +18,7 @@
         <title>Alpha Stage</title>
     </head>
     <body>
+<<<<<<< HEAD
         <img />
         <button onclick="navigate('prev')">Previous</button>
         <button onclick="navigate('next')">Next</button>
@@ -26,5 +31,13 @@
             document.getElementById('img').src = 'output.png?' + new Date().getTime();
         }
         </script>
+=======
+        <img id="data_image" />
+        <button id="btn-prev">Previous</button>
+        <button id="btn-next">Next</button>
+        <button id="btn-delete">Delete</button>
+        <button id="btn-accept">Accept</button>
+        <script src="renderer.js"></script>
+>>>>>>> origin/verifyScript
     </body>
 </html>

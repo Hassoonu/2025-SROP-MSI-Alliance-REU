@@ -1,12 +1,37 @@
 
 const {app, BrowserWindow, ipcMain } = require('electron/main')
+<<<<<<< HEAD
 const exec = require('child_process')
+=======
+const { spawn } = require('child_process')
+
+const pythonProcess = spawn('python', ['visualize.py']);
+
+pythonProcess.stdout.on('data', (data) => {
+  console.log(`PYTHON: ${data}`);
+});
+
+pythonProcess.stderr.on('data', (data) => {
+  console.error(`PYTHON ERROR: ${data}`);
+});
+
+pythonProcess.on('close', (code) => {
+  console.log(`Python process exited with code ${code}`);
+});
+
+
+>>>>>>> origin/verifyScript
 
 
 const createWindow = () => {
     const win = new BrowserWindow({
         width: 800,
+<<<<<<< HEAD
         height: 400
+=======
+        height: 600,
+        resizable: true
+>>>>>>> origin/verifyScript
     })   
 
     win.loadFile("index.html")
@@ -30,6 +55,7 @@ app.on("window-all-closed", () => {
 })
 
 
+<<<<<<< HEAD
 ipcMain.handle('next-dataset', () => {
   return execPromise('python visualize.py --action=next');
 });
@@ -55,3 +81,30 @@ function execPromise(command) {
     });
   });
 }
+=======
+// ipcMain.handle('next-dataset', () => {
+//   return execPromise('python visualize.py --action=next');
+// });
+
+// ipcMain.handle('prev-dataset', () => {
+//   return execPromise('python visualize.py --action=prev');
+// });
+
+// ipcMain.handle('delete-dataset', () => {
+//   return execPromise('python visualize.py --action=delete');
+// });
+
+// ipcMain.handle('accept-dataset', () => {
+//   return execPromise('python visualize.py --action=delete');
+// });
+
+// Helper
+// function execPromise(command) {
+//   return new Promise((resolve, reject) => {
+//     exec(command, (err, stdout, stderr) => {
+//       if (err) reject(stderr);
+//       else resolve(stdout);
+//     });
+//   });
+// }
+>>>>>>> origin/verifyScript
