@@ -21,3 +21,5 @@ out/
 temp/
 credentials.json
 token.json
+client_secrets.json
+datauploading.ipynb
