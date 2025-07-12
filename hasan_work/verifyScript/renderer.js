@@ -60,9 +60,48 @@ function sendAccept() {
         .catch(err => console.error("Failed to send POST to /accept:", err));
 }
 
-
-function updateImage(){
+async function updateImage(retries = 3, delay = 5000) {
     console.log("Updating Image...");
-    const img = document.getElementById('data_image');
-    img.src = `http://localhost:5000/image?t=${new Date().getTime()}`;
+    try {
+        const response = await fetch("http://localhost:5000/image");
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        document.getElementById("data_image").src = imageUrl;
+    } catch (error) {
+        console.error("Failed to load image:", error);
+
+        if (retries > 0) {
+            console.log(`Retrying... (${retries} attempts left)`);
+            setTimeout(() => updateImage(retries - 1, delay), delay);
+        } else {
+            console.error("All retries failed. Please try again.");
+        }
+    }
 }
+
+
+async function waitForFlaskReady(timeout = 10000) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+        try {
+            const response = await fetch("http://localhost:5000/");
+            if (response.ok) return true;
+        } catch (_) {
+            // Flask isn't ready yet
+        }
+        await new Promise(res => setTimeout(res, 500));
+    }
+    throw new Error("Flask server did not become ready in time");
+}
+
+
+
+async function init() {
+    await waitForFlaskReady();
+    updateImage();
+}
+
+document.addEventListener("DOMContentLoaded", init);
