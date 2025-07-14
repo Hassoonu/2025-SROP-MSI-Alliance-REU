@@ -11,4 +11,3 @@ dependencies:
   - jupyter
   - ipython
   - geojson
-  - pydrive2
