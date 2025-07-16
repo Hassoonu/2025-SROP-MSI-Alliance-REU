@@ -23,6 +23,8 @@ drive_api = None
 parent_drive = "1vIc1NqmQGPlP6ILXoY61fp0OWdcdGfbP"
 dataset_len = 0
 output_file_path = "temp/currData_dem.tif"
+indexByFolder = []
+currFolder = 0
 
 def get_current_index():
     if os.path.exists(index_file):
@@ -94,17 +96,18 @@ def download_data(request):
 def prepData():
     # find way to access data from dataIndex
     suffix = "dem.tif"
+    # MAKE IT SO THAT THIS FUNCTION ACCESSES THE FOLDER AT CURRFOLDER
     index = get_current_index()
     q = f"'{parent_drive}' in parents and mimeType = 'application/vnd.google-apps.folder'"
     files = accessFolder(drive_api, parent_drive, q)
-    file = files[index]
+    file = files[currFolder]
 
-    print("Looking for: ", files[index]['name'], files[index]['id'], flush=True)
+    print("Looking for: ", files[currFolder]['name'], files[currFolder]['id'], flush=True)
 
     if(file['mimeType'] == 'application/vnd.google-apps.folder'):
         files = accessFolder(drive_api, file['id'])
     print("Found Folder.................", flush=True)
-    fileID = None
+    fileID = files[index] # CHECK IF ITS A DEM FILE AND CORRECT INDEX
     for item in files:
         if item['name'].endswith(suffix):
             fileID = item['id']
@@ -307,14 +310,34 @@ if __name__ == '__main__':
 # functions to implement:
 # iterates to the next folder within the data structure
 def nextFolder():
-    pass
+    global currFolder
+    currFolder += 1
+    # make it so that it doesnt go past indexByFolder len
 
 # similar but opposite effect of nextFolder()
 def prevFolder():
-    pass
+    global currFolder
+    currFolder -= 1
+    if(currFolder < 0):
+        currFolder = 0
 
 # Creates a data structure that knows how many data points are in each folder
-def prepIndex():
+def prepIndex(api):
+    global indexByFolder
+    foldersIterator = api.getFolders()
+    # totalItems = 0
+    indexByFolder = [0] * dataset_len
+    iterator = 0
+    while (foldersIterator.hasNext()):
+        files = foldersIterator.getFiles()
+        sum = 0
+        while(files.hasNext()):
+            sum += 1
+            files.next()
+        indexByFolder[iterator] = sum 
+        iterator += 1
+        # totalItems += sum
+
     pass
 
 # increments the index counter, however also checks if within bound of the folder
