@@ -87,7 +87,10 @@ def download_data(request):
         file_handler = None
     print("Finished downloading.", flush=True)
     
-
+# needs to be simplified to only use the folder index it was provided or the global folder index
+# from there just access the element
+# keep a running count of total index or maybe local file index, some way to make sure
+# we're using the right index within the folder but also know what's the next folder to go to.
 def prepData():
     # find way to access data from dataIndex
     suffix = "dem.tif"
@@ -173,7 +176,7 @@ def get_image():
         if not os.path.exists("temp/currData_dem.tif") or os.path.getsize("temp/currData_dem.tif") < 1000:
             raise Exception("DEM file failed to download in time.")
 
-        scale_factor = 0.1  # 10% of original resolution
+        scale_factor = 1  # 10% of original resolution
 
         with rasterio.open("temp/currData_dem.tif") as dataset:
             new_height = int(dataset.height * scale_factor)
@@ -298,3 +301,47 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+# functions to implement:
+# iterates to the next folder within the data structure
+def nextFolder():
+    pass
+
+# similar but opposite effect of nextFolder()
+def prevFolder():
+    pass
+
+# Creates a data structure that knows how many data points are in each folder
+def prepIndex():
+    pass
+
+# increments the index counter, however also checks if within bound of the folder
+# if not, calls nextFolder():
+def nextIndex():
+    pass
+
+# same as above but inverse.
+def prevIndex():
+    pass
+
+
+'''
+ERRORS:
+After the "Finished Prepping data." print, the error is:
+PYTHON: ERROR: Invalid shape (257,) for image data
+AND:
+PYTHON ERROR: 127.0.0.1 - - [16/Jul/2025 15:03:51] "GET /image HTTP/1.1" 500
+
+
+PROGRAM CRASHES IF TOKEN IS NOT VALID
+
+DOWNLODAING DATA IS OFF, Not sure why it's taking so many attempts
+might look into a blocking io with the download function so excess attempts aren't made
+also look into the function and see what's wrong and why it's not downloading properly
+plt.show seems to be giving an error when trying to show the data.
+
+CURRENT INDEX SYSTEM GOES FOR THE FIRST FILE PER FOLDER, CHANGE TO THIS 
+NEW SYSTEM: https://excalidraw.com/#json=g5ySF974d5UF-uMCnRKHU,jddAsImGBUWlP33ItYj_Cw
+'''
