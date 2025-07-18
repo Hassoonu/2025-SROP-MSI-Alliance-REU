@@ -60,6 +60,10 @@ function sendAccept() {
         .catch(err => console.error("Failed to send POST to /accept:", err));
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function updateImage(retries = 3, delay = 5000) {
     console.log("Updating Image...");
     try {
@@ -67,6 +71,7 @@ async function updateImage(retries = 3, delay = 5000) {
         if (!response.ok) {
             throw new Error(`HTTP error ${response.status}`);
         }
+
         const blob = await response.blob();
         const imageUrl = URL.createObjectURL(blob);
         document.getElementById("data_image").src = imageUrl;
@@ -74,13 +79,15 @@ async function updateImage(retries = 3, delay = 5000) {
         console.error("Failed to load image:", error);
 
         if (retries > 0) {
-            console.log(`Retrying... (${retries} attempts left)`);
-            setTimeout(() => updateImage(retries - 1, delay), delay);
+            console.log(`Retrying in ${delay / 1000}s... (${retries} attempts left)`);
+            await sleep(delay);  // ⏸️ This is now a blocking delay
+            await updateImage(retries - 1, delay);  // 🔁 Recursively await retries
         } else {
             console.error("All retries failed. Please try again.");
         }
     }
 }
+
 
 
 async function waitForFlaskReady(timeout = 10000) {

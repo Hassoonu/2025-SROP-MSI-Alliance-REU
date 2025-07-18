@@ -99,45 +99,47 @@ def prepData():
     # MAKE IT SO THAT THIS FUNCTION ACCESSES THE FOLDER AT CURRFOLDER
     index = get_current_index()
     q = f"'{parent_drive}' in parents and mimeType = 'application/vnd.google-apps.folder'"
-    files = accessFolder(drive_api, parent_drive, q)
-    file = files[currFolder]
+    files = accessFolder(drive_api, parent_drive, q) # goes to parent directory with multiple folders per point
+    file = files[currFolder] # gets the folder we want
 
-    print("Looking for: ", files[currFolder]['name'], files[currFolder]['id'], flush=True)
+    print("Looking at: ", files[currFolder]['name'], flush=True)
 
     if(file['mimeType'] == 'application/vnd.google-apps.folder'):
         files = accessFolder(drive_api, file['id'])
-    print("Found Folder.................", flush=True)
-    fileID = files[index] # CHECK IF ITS A DEM FILE AND CORRECT INDEX
-    for item in files:
-        if item['name'].endswith(suffix):
-            fileID = item['id']
-            print("Found dem file.\n")
-            break
-        else:
-            continue
+    print("Entered Folder...", flush=True)
+    wantedFile = files[index] # CHECK IF ITS A DEM FILE AND CORRECT INDEX
+    
+    if(wantedFile['name'].endswith(suffix)):
+        print("found dem file!")
+        print("file name:", wantedFile['name'], flush=True)
+    else:
+        wantedFile = None
+    
+    # for item in files:
+    #     if item['name'].endswith(suffix):
+    #         fileID = item['id']
+    #         print("Found dem file.\n")
+    #         break
+    #     else:
+    #         continue
             
     
-    if fileID is None:
+    if wantedFile is None:
         raise ValueError(f"No file found ending with {suffix}")
     
-    print("Found File.................", flush=True)
-
     request = drive_api.files().get_media(
-        fileId=fileID,
+        fileId=wantedFile['id'],
         supportsAllDrives=True
     )
 
     metadata = drive_api.files().get(
-        fileId=fileID,
+        fileId=wantedFile['id'],
         fields="name",
         supportsAllDrives=True
     ).execute()
 
     filename = metadata["name"]
     print("Original filename from Drive:", filename, flush=True)
-
-    if os.path.exists(output_file_path):
-        os.remove(output_file_path)
 
     download_data(request)
 
@@ -147,15 +149,22 @@ def prepData():
 
 def next():
     index = get_current_index()
-    index = (index + 1) % dataset_len
+    curr_folder_len = indexByFolder[currFolder]
+    if(index + 1 >= curr_folder_len): # if we reached the end of the current folder
+        nextFolder() # get the next folder
+        index = 0 # reset index
+    else:
+        index += 1 # stay in same folder, iterate to next file
     save_current_index(index)
     return 0
 
 def prev():
     index = get_current_index()
-    index -= 1
-    if(index < 0):
-        index = 0
+    if(index - 1 < 0):
+        prevFolder() # go to the last folder
+        index = indexByFolder[currFolder] - 1 # so we don't go past the length
+    else:
+        index -= 1
     save_current_index(index)
     return 0
 
@@ -166,8 +175,11 @@ def health():
 @app.route('/image')
 def get_image():
     try:
+        if os.path.exists(output_file_path):
+            os.remove(output_file_path)
         print("Starting image generation...", flush=True)
         prepData()
+        
         print("Finished Prepping data.", flush=True)
         # Wait for the file to exist and have non-zero size
         tries = 0
@@ -179,24 +191,17 @@ def get_image():
         if not os.path.exists("temp/currData_dem.tif") or os.path.getsize("temp/currData_dem.tif") < 1000:
             raise Exception("DEM file failed to download in time.")
 
-        scale_factor = 1  # 10% of original resolution
 
+        print("OPENING WITH RASTER...", flush=True)
         with rasterio.open("temp/currData_dem.tif") as dataset:
-            new_height = int(dataset.height * scale_factor)
-            new_width = int(dataset.width * scale_factor)
-
-            band = dataset.read(
-                1,
-                out_shape=(1, new_height, new_width),
-                resampling=Resampling.average
-            )
-
-            band = np.ma.masked_equal(band[0], dataset.nodata)
-
+            print("bad values:", dataset.nodata, flush=True)
+            band = dataset.read(1)
+            band = np.ma.masked_equal(band, dataset.nodata)
+        print("Finished...", flush=True)
         fig, ax = plt.subplots()
-        cax = ax.imshow(band, cmap='viridis')
+        cax = ax.imshow(band, cmap='gray', label='Elevation')
         fig.colorbar(cax)
-
+        print("Saving Figure...", flush=True)
         buf = io.BytesIO()
         plt.savefig(buf, format='png', bbox_inches='tight')
         plt.close(fig)
@@ -255,6 +260,39 @@ def index():
     return "Flask server running and connected to Google Drive"
 
 
+# functions to implement:
+# iterates to the next folder within the data structure
+def nextFolder():
+    global currFolder
+    if(currFolder + 1 < dataset_len):
+        currFolder += 1
+    # make it so that it doesnt go past dataset_len len
+
+# similar but opposite effect of nextFolder()
+def prevFolder():
+    global currFolder
+    if(currFolder - 1 >= 0):
+        currFolder -= 1
+    # for functionality, maybe add a round-about so if we go less than 0 we loop back to the last folder
+
+# Creates a data structure that knows how many data points are in each folder
+def prepIndex(api):
+    global indexByFolder
+    q = f"'{parent_drive}' in parents and mimeType = 'application/vnd.google-apps.folder'"
+    foldersIterator = accessFolder(api, parent_drive, q)
+    # totalItems = 0
+    indexByFolder = [0] * dataset_len
+    iterator = 0
+    for folder in foldersIterator:
+        filesList = accessFolder(api, folder['id'])
+        sum = len(filesList)
+        indexByFolder[iterator] = sum 
+        iterator += 1
+        # totalItems += sum
+    print("Index by folder:")
+    print(indexByFolder)
+    return 0
+
 def connectToDrive():
     global drive_api, dataset_len
     print("Initializing Server...")
@@ -299,56 +337,12 @@ def connectToDrive():
 
 def main():
     connectToDrive()
+    prepIndex(drive_api)
     app.run(port=5000)
     # prepData()
 
 if __name__ == '__main__':
     main()
-
-
-
-# functions to implement:
-# iterates to the next folder within the data structure
-def nextFolder():
-    global currFolder
-    currFolder += 1
-    # make it so that it doesnt go past indexByFolder len
-
-# similar but opposite effect of nextFolder()
-def prevFolder():
-    global currFolder
-    currFolder -= 1
-    if(currFolder < 0):
-        currFolder = 0
-
-# Creates a data structure that knows how many data points are in each folder
-def prepIndex(api):
-    global indexByFolder
-    foldersIterator = api.getFolders()
-    # totalItems = 0
-    indexByFolder = [0] * dataset_len
-    iterator = 0
-    while (foldersIterator.hasNext()):
-        files = foldersIterator.getFiles()
-        sum = 0
-        while(files.hasNext()):
-            sum += 1
-            files.next()
-        indexByFolder[iterator] = sum 
-        iterator += 1
-        # totalItems += sum
-
-    pass
-
-# increments the index counter, however also checks if within bound of the folder
-# if not, calls nextFolder():
-def nextIndex():
-    pass
-
-# same as above but inverse.
-def prevIndex():
-    pass
-
 
 '''
 ERRORS:
