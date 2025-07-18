@@ -10,7 +10,7 @@ env/
 venv/
 
 # Ignore system files
-
+node_modules/
 .DS_Store
 *.pyc
 __pycache__/
@@ -18,6 +18,6 @@ __pycache__/
 # for verify script
 node_modules/
 out/
-temp/
 credentials.json
 token.json
+temp/
